@@ -1,0 +1,44 @@
+[
+  {
+    "resource": "teams",
+    "permissions": [
+      {
+        "role": "team-leader",
+        "methods": [
+          "post"
+        ]
+      },
+      {
+        "role": "$owner",
+        "methods": [
+          "get",
+          "patch",
+          "delete"
+        ]
+      },
+      {
+        "role": "$member",
+        "methods": [
+          "get"
+        ]
+      }
+    ]
+  },
+  {
+    "resource": "employees",
+    "permissions": [
+      {
+        "role": "employee",
+        "methods": []
+      },
+      {
+        "role": "$owner",
+        "methods": [
+          "get",
+          "patch",
+          "delete"
+        ]
+      }
+    ]
+  }
+]

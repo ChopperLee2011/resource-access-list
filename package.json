@@ -1,0 +1,56 @@
+{
+  "name": "resource-access-list",
+  "version": "0.0.0",
+  "description": "This is a awesome project",
+  "main": "dist/index.js",
+  "scripts": {
+    "pretest": "standard",
+    "test": "mocha --compilers js:babel-register",
+    "build": "babel --optional runtime src -d dist",
+    "postbuild": "npm test -s",
+    "changelog": "github-changes -o ChopperLee2011 -r resource access list",
+    "check": "dependency-check package.json --entry src",
+    "prepublish": "npm run build -s",
+    "patch": "npm version patch && npm publish",
+    "minor": "npm version minor && npm publish",
+    "major": "npm version major && npm publish",
+    "postpublish": "git push origin master --follow-tags"
+  },
+  "author": {
+    "name": "chopperlee",
+    "email": "lihengpro@gmail.com"
+  },
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "standard": {
+    "env": [
+      "node",
+      "es6",
+      "mocha"
+    ],
+    "ignore": [
+      "dist"
+    ]
+  },
+  "keywords": [
+    "yoeman",
+    "npm",
+    "es6"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.24.0",
+    "babel-core": "^6.24.0",
+    "babel-preset-latest": "^6.24.0",
+    "chai": "^3.5.0",
+    "dependency-check": "^2.8.0",
+    "github-changes": "^1.1.0",
+    "mocha": "^3.2.0",
+    "standard": "^10.0.1"
+  },
+  "dependencies": {
+    "http-errors": "^1.6.1",
+    "lodash": "^4.17.4"
+  }
+}
