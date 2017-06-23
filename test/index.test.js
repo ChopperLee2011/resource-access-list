@@ -58,7 +58,7 @@ describe('resourceAccessList', () => {
       })
     })
 
-    it.only('role: $member', done => {
+    it('role: $member', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))
       ral.userModleName = 'employees'
@@ -141,7 +141,7 @@ describe('resourceAccessList', () => {
       })
     })
 
-    it.only('throw 401 user is not the $member', done => {
+    it('throw 401 user is not the $member', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))
       ral.userModleName = 'employees'
@@ -154,7 +154,7 @@ describe('resourceAccessList', () => {
                 return {id: 1}
               },
               member: () => {
-                return {id: 2}
+                return {id: 1}
               }
             })
           }

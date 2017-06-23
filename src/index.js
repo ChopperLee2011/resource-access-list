@@ -20,10 +20,6 @@ class ACL {
     return acl.superRoles.includes(...roles)
   }
 
-  ifOwner (req, userId, limit) {
-
-  }
-
   reqParser (req) {
     let url
     if (!acl.prefix) {
@@ -42,33 +38,19 @@ class ACL {
 
   getDynamicRole ({models, resource, resourceId, userId}) {
     let roles = []
-    // $owner
-    console.log('getDynamicRole')
-    console.log('resource', resource)
     return new Promise((resolve, reject) => {
       models[resource].findById(resourceId)
         .then(ModelInst => {
-          console.log('ModelInst', ModelInst)
           // make user owner relationship is setting and type is belongsTo
           if (ModelInst.owner && ModelInst.owner() && Number(ModelInst.owner().id) === Number(userId)) {
             roles.push('$owner')
-            console.log('done')
             return resolve(roles)
           } else if (ModelInst.member && ModelInst.member()) {
-            console.log('check member')
             return models[acl.userModleName].findById(userId)
               .then(userInst => {
-                console.log('userInst', userInst)
-                console.log('userInst.member().id', userInst.member().id)
-                console.log('ModelInst.member().id', ModelInst.member().id)
-                console.log('userInst.member', userInst.member)
-                console.log('userInst.member', userInst.member())
-                console.log(userInst.member().id === ModelInst.member().id)
                 if (userInst.member && userInst.member() && Number(userInst.member().id) === Number(ModelInst.member().id)) {
-                  console.log('roles before', roles)
                   roles.push('$member')
                 }
-                console.log('roles', roles)
                 return resolve(roles)
               })
           } else {
@@ -90,7 +72,6 @@ class ACL {
         return next()
       }
       const parsedRequest = acl.reqParser(req)
-      console.log('parsedRequest', parsedRequest)
       let dynamicRolePromise
       if (parsedRequest.resourceId) {
         dynamicRolePromise = acl.getDynamicRole({
@@ -100,7 +81,6 @@ class ACL {
           userId: req.user.id
         })
           .then(dynamicRole => {
-            console.log('dynamicRole', dynamicRole)
             roles = roles.concat(dynamicRole)
             return roles
           })
@@ -109,15 +89,10 @@ class ACL {
       }
       dynamicRolePromise
         .then(() => {
-          console.log('roles', roles)
-          console.log('rules', acl.rules)
-          console.log('parsedRequest.resource', parsedRequest.resource === 'employee')
           const matchRule = acl.rules.find(rule => rule.resource === parsedRequest.resource)
-          console.log('matchRule', matchRule)
           if (matchRule) {
             for (let role of roles) {
               const matchPermission = matchRule.permissions.find(permission => {
-                console.log('permission', permission)
                 return permission.role === role
               })
               if (matchPermission && matchPermission.methods.indexOf(parsedRequest.method) !== -1) {
