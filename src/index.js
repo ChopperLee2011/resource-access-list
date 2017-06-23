@@ -10,6 +10,7 @@ class ACL {
       this.superRoles = opts.superRoles || ['admin']
       this.ownerField = opts.ownerFiled || 'userId'
       this.memberField = opts.memberField || 'teamId'
+      this.userModleName = opts.userModelName || 'user'
       acl = this
     }
     return acl
@@ -39,16 +40,39 @@ class ACL {
     }
   }
 
-  getDynamicRole ({models, resource, resourceId, ownerField, userId, memberField}) {
+  getDynamicRole ({models, resource, resourceId, userId}) {
     let roles = []
     // $owner
+    console.log('getDynamicRole')
+    console.log('resource', resource)
     return new Promise((resolve, reject) => {
       models[resource].findById(resourceId)
-        .then(modelInst => {
-          if (modelInst[ownerField] === userId) {
+        .then(ModelInst => {
+          console.log('ModelInst', ModelInst)
+          // make user owner relationship is setting and type is belongsTo
+          if (ModelInst.owner && ModelInst.owner() && Number(ModelInst.owner().id) === Number(userId)) {
             roles.push('$owner')
+            console.log('done')
+            return resolve(roles)
+          } else if (ModelInst.member && ModelInst.member()) {
+            console.log('check member')
+            return models[acl.userModleName].findById(userId)
+              .then(userInst => {
+                console.log('userInst', userInst)
+                console.log('userInst.member().id', userInst.member().id)
+                console.log('ModelInst.member().id', ModelInst.member().id)
+                console.log('userInst.member', userInst.member)
+                console.log('userInst.member', userInst.member())
+                console.log(userInst.member().id === ModelInst.member().id)
+                if (userInst.member && userInst.member() && Number(userInst.member().id) === Number(ModelInst.member().id)) {
+                  console.log('roles before', roles)
+                  roles.push('$member')
+                }
+                console.log('roles', roles)
+                return resolve(roles)
+              })
           } else {
-            // return models[users].findById()
+            return resolve(roles)
           }
         })
         .catch(err => reject(err))
@@ -56,9 +80,9 @@ class ACL {
   }
 
   check (req, res, next) {
-    // if (Object.keys(acl.rules).length === 0) {
-    //   return next(createError())
-    // }
+    if (Object.keys(acl.rules).length === 0) {
+      return next(createError(401))
+    }
     if (req && req.user && req.user.roles) {
       let roles = req.user.roles
       let access = false
@@ -73,7 +97,6 @@ class ACL {
           resource: parsedRequest.resource,
           resourceId: parsedRequest.resourceId,
           models: req.app.models,
-          ownerField: acl.ownerField,
           userId: req.user.id
         })
           .then(dynamicRole => {
