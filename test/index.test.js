@@ -38,14 +38,14 @@ describe('resourceAccessList', () => {
     it('role: $owner', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))
-      ral.userModleName = 'employees'
+      ral.userModleName = 'Employee'
       const models = {
-        employees: {
+        Employee: {
           findById: () => {
             return Promise.resolve({
               id: 1,
-              owner: () => {
-                return {id: 1}
+              owner: (cb) => {
+                return cb(null, {id: 1})
               }
             })
           }
@@ -61,33 +61,34 @@ describe('resourceAccessList', () => {
     it('role: $member', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))
-      ral.userModleName = 'employees'
+      ral.memberField = 'teamId'
+      ral.userModleName = 'Employee'
       const models = {
-        employees: {
+        Employee: {
           findById: (n) => {
             return Promise.resolve({
               id: n,
-              owner: () => {
-                return {id: 1}
+              owner: (cb) => {
+                return cb(null, {id: 1})
               },
-              member: () => {
-                return {id: 1}
+              member: (cb) => {
+                return cb(null, {id: 1})
               }
             })
           }
         },
-        teams: {
+        Team: {
           findById: (n) => {
             return Promise.resolve({
               id: n,
-              member: () => {
-                return {id: n}
+              member: (cb) => {
+                return cb(null, {id: n})
               }
             })
           }
         }
       }
-      const fakeReq = {user: {id: 1, roles: ['employee']}, path: '/teams/1', method: 'get', app: {models}}
+      const fakeReq = {user: {id: 1, teamId: 1, roles: ['employee']}, path: '/teams/1', method: 'get', app: {models}}
       ral.check(fakeReq, null, (err) => {
         expect(err).to.be.an('undefined')
         done()
@@ -120,14 +121,14 @@ describe('resourceAccessList', () => {
     it('throw 401 user is not the $owner ', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))
-      ral.userModleName = 'employees'
+      ral.userModleName = 'Employee'
       const models = {
-        employees: {
+        Employee: {
           findById: () => {
             return Promise.resolve({
               id: 2,
-              owner: () => {
-                return {id: 2}
+              owner: (cb) => {
+                return cb(null, {id: 2})
               }
             })
           }
@@ -144,33 +145,27 @@ describe('resourceAccessList', () => {
     it('throw 401 user is not the $member', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))
-      ral.userModleName = 'employees'
+      ral.userModleName = 'Employee'
       const models = {
-        employees: {
+        Employee: {
           findById: (n) => {
             return Promise.resolve({
-              id: n,
-              owner: () => {
-                return {id: 1}
-              },
-              member: () => {
-                return {id: 1}
-              }
+              id: n
             })
           }
         },
-        teams: {
+        Team: {
           findById: (n) => {
             return Promise.resolve({
               id: n,
-              member: () => {
-                return {id: 2}
+              member: (cb) => {
+                return cb(null, {id: 2})
               }
             })
           }
         }
       }
-      const fakeReq = {user: {id: 1, roles: ['employee']}, path: '/teams/1', method: 'get', app: {models}}
+      const fakeReq = {user: {id: 1, teamId: 1, roles: ['employee']}, path: '/teams/1', method: 'get', app: {models}}
       ral.check(fakeReq, null, (err) => {
         expect(err).to.be.an('error')
         expect(err.statusCode).to.equal(401)

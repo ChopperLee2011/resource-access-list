@@ -8,9 +8,9 @@ class ACL {
       this.rules = {}
       this.prefix = opts.prefix || ''
       this.superRoles = opts.superRoles || ['admin']
-      this.ownerField = opts.ownerFiled || 'userId'
       this.memberField = opts.memberField || 'teamId'
       this.userModleName = opts.userModelName || 'user'
+      this.memberField = opts.memberField || 'member'
       acl = this
     }
     return acl
@@ -36,23 +36,39 @@ class ACL {
     }
   }
 
-  getDynamicRole ({models, resource, resourceId, userId}) {
+  resourceToModelName (resource) {
+    return resource.charAt(0).toUpperCase() + resource.slice(1, -1)
+  }
+
+  getDynamicRole ({models, resource, resourceId, userId, memberId}) {
     let roles = []
     return new Promise((resolve, reject) => {
-      models[resource].findById(resourceId)
+      models[this.resourceToModelName(resource)].findById(resourceId)
         .then(ModelInst => {
           // make user owner relationship is setting and type is belongsTo
-          if (ModelInst.owner && ModelInst.owner() && Number(ModelInst.owner().id) === Number(userId)) {
-            roles.push('$owner')
-            return resolve(roles)
-          } else if (ModelInst.member && ModelInst.member()) {
-            return models[acl.userModleName].findById(userId)
-              .then(userInst => {
-                if (userInst.member && userInst.member() && Number(userInst.member().id) === Number(ModelInst.member().id)) {
+          if (ModelInst && ModelInst.owner) {
+            ModelInst.owner((err, owner) => {
+              if (err) {
+                return reject(err)
+              } else if (Number(owner.id) === Number(userId)) {
+                roles.push('$owner')
+              }
+              return resolve(roles)
+            })
+          } else if (ModelInst && ModelInst.member) {
+            // return models[acl.userModleName].findById(userId)
+            //   .then(userInst => {
+            if (ModelInst.member) {
+              ModelInst.member((err, member) => {
+                if (err) {
+                  return reject(err)
+                } else if (Number(memberId) === Number(member.id)) {
                   roles.push('$member')
                 }
                 return resolve(roles)
               })
+            }
+            // })
           } else {
             return resolve(roles)
           }
@@ -78,7 +94,8 @@ class ACL {
           resource: parsedRequest.resource,
           resourceId: parsedRequest.resourceId,
           models: req.app.models,
-          userId: req.user.id
+          userId: req.user.id,
+          memberId: req.user[acl.memberField] || ''
         })
           .then(dynamicRole => {
             roles = roles.concat(dynamicRole)
