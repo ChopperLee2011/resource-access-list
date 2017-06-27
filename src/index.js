@@ -9,8 +9,6 @@ class ACL {
       this.prefix = opts.prefix || ''
       this.superRoles = opts.superRoles || ['admin']
       this.memberField = opts.memberField || 'teamId'
-      this.userModleName = opts.userModelName || 'user'
-      this.memberField = opts.memberField || 'member'
       acl = this
     }
     return acl
@@ -56,19 +54,14 @@ class ACL {
               return resolve(roles)
             })
           } else if (ModelInst && ModelInst.member) {
-            // return models[acl.userModleName].findById(userId)
-            //   .then(userInst => {
-            if (ModelInst.member) {
-              ModelInst.member((err, member) => {
-                if (err) {
-                  return reject(err)
-                } else if (Number(memberId) === Number(member.id)) {
-                  roles.push('$member')
-                }
-                return resolve(roles)
-              })
-            }
-            // })
+            ModelInst.member((err, member) => {
+              if (err) {
+                return reject(err)
+              } else if (Number(memberId) === Number(member.id)) {
+                roles.push('$member')
+              }
+              return resolve(roles)
+            })
           } else {
             return resolve(roles)
           }
