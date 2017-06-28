@@ -38,8 +38,7 @@ class ACL {
   resourceToModelName (modelNameList, resource) {
     console.log(resource)
     const nameRe = new RegExp(resource.slice(0, -1), 'i')
-    return modelNameList.find(name => nameRe.test(modelNameList))
-    // return resource.charAt(0).toUpperCase() + resource.slice(1, -1)
+    return modelNameList.find(name => nameRe.test(name))
   }
 
   getDynamicRole ({models, resource, resourceId, userId, memberId}) {
@@ -52,16 +51,17 @@ class ACL {
             ModelInst.owner((err, owner) => {
               if (err) {
                 return reject(err)
-              } else if (Number(owner.id) === Number(userId)) {
+              } else if (!!owner && Number(owner.id) === Number(userId)) {
                 roles.push('$owner')
+                return resolve(roles)
               }
-              return resolve(roles)
             })
-          } else if (ModelInst && ModelInst.member) {
+          }
+          if (ModelInst && ModelInst.member) {
             ModelInst.member((err, member) => {
               if (err) {
                 return reject(err)
-              } else if (Number(memberId) === Number(member.id)) {
+              } else if (!!member && Number(member.id) === Number(memberId)) {
                 roles.push('$member')
               }
               return resolve(roles)
@@ -122,7 +122,7 @@ class ACL {
           }
         })
         .catch(err => {
-          console.log(err)
+          return next(err)
         })
     } else {
       return next(createError(acl.notAllowStatusCode))
