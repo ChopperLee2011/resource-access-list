@@ -58,6 +58,29 @@ describe('resourceAccessList', () => {
       })
     })
 
+    it('role: $owner support model name: AxxxBxxx ', done => {
+      const ral = new Ral()
+      ral.setRules(path.join(__dirname, './rules'))
+      ral.userModleName = 'Employee'
+      const models = {
+        EmploYee: {
+          findById: () => {
+            return Promise.resolve({
+              id: 1,
+              owner: (cb) => {
+                return cb(null, {id: 1})
+              }
+            })
+          }
+        }
+      }
+      const fakeReq = {user: {id: 1, roles: ['team-leader']}, path: '/employees/1', method: 'get', app: {models}}
+      ral.check(fakeReq, null, (err) => {
+        expect(err).to.be.an('undefined')
+        done()
+      })
+    })
+
     it('role: $member', done => {
       const ral = new Ral()
       ral.setRules(path.join(__dirname, './rules'))

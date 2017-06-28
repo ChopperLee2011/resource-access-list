@@ -35,14 +35,17 @@ class ACL {
     }
   }
 
-  resourceToModelName (resource) {
-    return resource.charAt(0).toUpperCase() + resource.slice(1, -1)
+  resourceToModelName (modelNameList, resource) {
+    console.log(resource)
+    const nameRe = new RegExp(resource.slice(0, -1), 'i')
+    return modelNameList.find(name => nameRe.test(modelNameList))
+    // return resource.charAt(0).toUpperCase() + resource.slice(1, -1)
   }
 
   getDynamicRole ({models, resource, resourceId, userId, memberId}) {
     let roles = []
     return new Promise((resolve, reject) => {
-      models[this.resourceToModelName(resource)].findById(resourceId)
+      models[this.resourceToModelName(Object.keys(models), resource)].findById(resourceId)
         .then(ModelInst => {
           // make user owner relationship is setting and type is belongsTo
           if (ModelInst && ModelInst.owner) {
