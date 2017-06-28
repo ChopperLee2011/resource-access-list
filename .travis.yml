@@ -2,4 +2,11 @@ language: node_js
 node_js:
   - 7
   - 6
-  - 4
+
+install:
+  - yarn install
+  - npm test
+cache: yarn
+
+notifications:
+  email: false
