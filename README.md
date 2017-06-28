@@ -34,5 +34,5 @@ MIT © [chopperlee]
 [npm-url]: https://npmjs.org/package/resource-access-list
 [npm-image]: https://img.shields.io/npm/v/resource-access-list.svg?style=flat-square
 
-[travis-url]: https://travis-ci.org/chopperlee/resource-access-list
-[travis-image]: https://img.shields.io/travis/chopperlee/resource-access-list.svg?style=flat-square
+[travis-url]: https://travis-ci.org/ChopperLee2011/resource-access-list
+[travis-image]: https://img.shields.io/travis/ChopperLee2011/resource-access-list.svg?style=flat-square
