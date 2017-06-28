@@ -9,6 +9,7 @@ class ACL {
       this.prefix = opts.prefix || ''
       this.superRoles = opts.superRoles || ['admin']
       this.memberField = opts.memberField || 'teamId'
+      this.notAllowStatusCode = opts.notAllowStatusCode || 401
       acl = this
     }
     return acl
@@ -72,7 +73,7 @@ class ACL {
 
   check (req, res, next) {
     if (Object.keys(acl.rules).length === 0) {
-      return next(createError(401))
+      return next(createError(acl.notAllowStatusCode))
     }
     if (req && req.user && req.user.roles) {
       let roles = req.user.roles
@@ -114,14 +115,14 @@ class ACL {
           if (access) {
             return next()
           } else {
-            return next(createError(401))
+            return next(createError(acl.notAllowStatusCode))
           }
         })
         .catch(err => {
           console.log(err)
         })
     } else {
-      return next(createError(401))
+      return next(createError(acl.notAllowStatusCode))
     }
   }
 

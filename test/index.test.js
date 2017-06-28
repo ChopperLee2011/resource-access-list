@@ -172,5 +172,17 @@ describe('resourceAccessList', () => {
         done()
       })
     })
+
+    it('throw 403 when update instance not allow status code to 403', done => {
+      const ral = new Ral()
+      ral.notAllowStatusCode = 403
+      ral.setRules(path.join(__dirname, './rules'))
+      const fakeReq = {user: {id: 1, roles: ['team-leader']}, path: '/teams', method: 'GET'}
+      ral.check(fakeReq, null, (err) => {
+        expect(err).to.be.an('error')
+        expect(err.statusCode).to.equal(403)
+        done()
+      })
+    })
   })
 })
