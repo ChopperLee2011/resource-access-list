@@ -2,8 +2,10 @@
 
 [![NPM version][npm-image]][npm-url]
 [![Build Status][travis-image]][travis-url]
+[![Downloads][download-badge]][npm-url]
+[![Code Style][standard-image]][standard-url]
 
-An ACL middleware for Loopback APP, with limit dynamic role supported.
+A simple Loopback ACL middleware with one rule file, also support limited dynamic role supported which base on Loopback model relation method
 
 Inspired by the following libraries/examples:
  - https://github.com/SwiftBlue/simple-express-acl
@@ -17,9 +19,18 @@ npm i -S resource-access-list
 ## Usage
 
 ```js
-import resourceAccessList from "resource-access-list"
+const path = require('path')
+const Ral = require('resource-access-list')
 
-resourceAccessList() // true
+module.exports = () => {
+  const ral = new Ral()
+  ral.superRoles = ['admin']
+  ral.notAllowStatusCode = 403
+  ral.setRules(path.join(__dirname, '../rules'))
+  return ral.check
+}
+
+
 ```
 
 
@@ -36,3 +47,8 @@ MIT © [chopperlee]
 
 [travis-url]: https://travis-ci.org/ChopperLee2011/resource-access-list
 [travis-image]: https://img.shields.io/travis/ChopperLee2011/resource-access-list.svg?style=flat-square
+
+[download-badge]: http://img.shields.io/npm/dm/resource-access-list.svg?style=flat-square
+
+[standard-image]: https://img.shields.io/badge/code_style-standard-brightgreen.svg
+[standard-url]: https://standardjs.com

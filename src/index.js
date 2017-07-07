@@ -43,7 +43,11 @@ class ACL {
   getDynamicRole ({models, resource, resourceId, userId, memberId}) {
     let roles = []
     return new Promise((resolve, reject) => {
-      models[this.resourceToModelName(Object.keys(models), resource)].findById(resourceId)
+      const lbModle = this.resourceToModelName(Object.keys(models), resource)
+      if (lbModle == null) {
+        return resolve()
+      }
+      models[lbModle].findById(resourceId)
         .then(ModelInst => {
           // make user owner relationship is setting and type is belongsTo
           if (ModelInst && ModelInst.owner) {
