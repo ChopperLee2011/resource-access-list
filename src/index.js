@@ -36,7 +36,7 @@ class ACL {
   }
 
   resourceToModelName (modelNameList, resource) {
-    const nameRe = new RegExp(resource.slice(0, -1), 'i')
+    const nameRe = new RegExp(resource + '?$', 'i')
     return modelNameList.find(name => nameRe.test(name))
   }
 
