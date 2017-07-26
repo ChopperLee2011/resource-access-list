@@ -2,6 +2,7 @@ import createError from 'http-errors'
 import _ from 'lodash'
 
 let acl = null
+
 class ACL {
   constructor (opts = {}) {
     if (!acl) {
@@ -41,7 +42,6 @@ class ACL {
   }
 
   getDynamicRole ({models, resource, resourceId, userId, memberId}) {
-    let roles = []
     return new Promise((resolve, reject) => {
       const lbModle = this.resourceToModelName(Object.keys(models), resource)
       if (lbModle == null) {
@@ -49,29 +49,37 @@ class ACL {
       }
       models[lbModle].findById(resourceId)
         .then(ModelInst => {
+          let checkRolePromises = []
           // make user owner relationship is setting and type is belongsTo
           if (ModelInst && ModelInst.owner) {
-            ModelInst.owner((err, owner) => {
-              if (err) {
-                return reject(err)
-              } else if (!!owner && Number(owner.id) === Number(userId)) {
-                roles.push('$owner')
-                return resolve(roles)
-              }
+            const checkOwnerPormise = new Promise((resolve, reject) => {
+              ModelInst.owner((err, owner) => {
+                if (err) {
+                  return reject(err)
+                } else if (!!owner && Number(owner.id) === Number(userId)) {
+                  return resolve('$owner')
+                }
+                return resolve()
+              })
             })
+            checkRolePromises.push(checkOwnerPormise)
           }
           if (ModelInst && ModelInst.member) {
-            ModelInst.member((err, member) => {
-              if (err) {
-                return reject(err)
-              } else if (!!member && Number(member.id) === Number(memberId)) {
-                roles.push('$member')
-              }
-              return resolve(roles)
+            const checkMemberPromsie = new Promise((resolve, reject) => {
+              ModelInst.member((err, member) => {
+                if (err) {
+                  return reject(err)
+                } else if (!!member && Number(member.id) === Number(memberId)) {
+                  return resolve('$member')
+                }
+                return resolve()
+              })
             })
-          } else {
-            return resolve(roles)
+            checkRolePromises.push(checkMemberPromsie)
           }
+          return Promise.all(checkRolePromises)
+            .then(resolve)
+            .catch(reject)
         })
         .catch(err => reject(err))
     })

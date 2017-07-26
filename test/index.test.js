@@ -151,7 +151,7 @@ describe('resourceAccessList', () => {
             return Promise.resolve({
               id: 2,
               owner: (cb) => {
-                return cb(null, {id: 2})
+                setTimeout(() => cb(null, {id: 2}), 100)
               }
             })
           }
@@ -182,7 +182,7 @@ describe('resourceAccessList', () => {
             return Promise.resolve({
               id: n,
               member: (cb) => {
-                return cb(null, {id: 2})
+                setTimeout(() => cb(null, {id: 2}), 100)
               }
             })
           }
